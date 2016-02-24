@@ -397,6 +397,7 @@ func DestinyBaseHandle(w http.ResponseWriter, r *http.Request) {
 func DestinyNickHandle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	vars["channel"] = "Destinygg chatlog"
+	isTXT := strings.HasSuffix(r.URL.Path, ".txt")
 	search, err := common.NewNickSearch(common.GetConfig().LogPath+"/"+vars["channel"], vars["nick"])
 	if err != nil {
 		serveError(w, ErrNotFound)
@@ -407,8 +408,11 @@ func DestinyNickHandle(w http.ResponseWriter, r *http.Request) {
 		serveError(w, ErrNotFound)
 		return
 	}
-	if rs.Nick() != vars["nick"] {
+	if rs.Nick() != vars["nick"] && !isTXT {
 		http.Redirect(w, r, "./"+rs.Nick(), 301)
+		return
+	} else if rs.Nick() != vars["nick"] && isTXT {
+		http.Redirect(w, r, "./"+rs.Nick()+".txt", 301)
 		return
 	}
 	vars["month"] = rs.Month()
